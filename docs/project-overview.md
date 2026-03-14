@@ -5,7 +5,7 @@
 > `Sprint-Ops Tracker` is a lightweight, Jira-inspired sprint and backlog tracking application for small-team workflow management. It is being built as a portfolio project to demonstrate practical AWS serverless architecture, React frontend development, Node.js backend development, Terraform-based infrastructure as code, and foundational DevSecOps design thinking.
 > 
 > 
- > ### *** Project Goal***
+ > ### ***Project Goal***
 >  
 > The goal of SprintOpsTracker is to build a realistic, low-cost cloud project that helps demonstrate job-ready cloud and DevSecOps skills.
 > 

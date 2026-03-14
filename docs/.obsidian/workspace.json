@@ -260,10 +260,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "6bef869842ba3c54",
+  "active": "ec0b48240656f232",
   "lastOpenFiles": [
-    "architecture/architecture-summary.md",
     "build-notes/build-phases.md",
+    "architecture/architecture-summary.md",
     "security/security-baseline.md",
     "planning/tech-stack.md",
     "project-overview.md",

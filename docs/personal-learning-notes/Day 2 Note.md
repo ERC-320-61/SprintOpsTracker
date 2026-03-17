@@ -1,4 +1,4 @@
-# Sprint-Ops Tracker : Reflection Log - Day 2
+# Sprint-Ops Tracker Reflection Log : Day 2
 
 > [!info] ***Overview***
 > ---

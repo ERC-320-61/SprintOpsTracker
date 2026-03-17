@@ -1,29 +1,62 @@
+const API_BASE_URL = "http://localhost:3001";
+
+// Fetch all work items from the backend API
 export async function getItems() {
-  
-  return [
-    {
-      itemId: "item-001",
-      title: "Create backlog page shell",
-      status: "Backlog",
-      priority: "High",
-      storyPoints: 3,
-      assignee: "Eric",
+  const response = await fetch(`${API_BASE_URL}/items`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch items.");
+  }
+
+  return response.json();
+}
+
+// Send a new work item to the backend API
+export async function createItem(itemData) {
+  const response = await fetch(`${API_BASE_URL}/items`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-    {
-      itemId: "item-002",
-      title: "Build sprint board placeholder",
-      status: "Ready",
-      priority: "Medium",
-      storyPoints: 2,
-      assignee: "Eric",
+    body: JSON.stringify(itemData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to create item.");
+  }
+
+  return response.json();
+}
+
+// Update an existing work item by id
+export async function updateItem(itemId, itemData) {
+  const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
     },
-    {
-      itemId: "item-003",
-      title: "Document frontend structure",
-      status: "In Progress",
-      priority: "Low",
-      storyPoints: 1,
-      assignee: "Eric",
-    },
-  ];
+    body: JSON.stringify(itemData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update item.");
+  }
+
+  return response.json();
+}
+
+// Delete a work item by id
+export async function deleteItem(itemId) {
+  const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to delete item.");
+  }
+
+  return response.json();
 }

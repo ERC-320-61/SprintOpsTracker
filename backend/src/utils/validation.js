@@ -1,5 +1,6 @@
-const ALLOWED_STATUSES = ["Backlog", "Ready", "In Progress", "Blocked", "Done"];
+const ALLOWED_ITEM_STATUSES = ["Backlog", "Ready", "In Progress", "Blocked", "Done"];
 const ALLOWED_PRIORITIES = ["Low", "Medium", "High", "Critical"];
+const ALLOWED_SPRINT_STATUSES = ["Planned", "Active", "Closed"];
 
 function validateRequiredFields(data, requiredFields) {
   const missingFields = requiredFields.filter((field) => {
@@ -14,7 +15,7 @@ function validateRequiredFields(data, requiredFields) {
 }
 
 function validateItemFields(data) {
-  if (data.status && !ALLOWED_STATUSES.includes(data.status)) {
+  if (data.status && !ALLOWED_ITEM_STATUSES.includes(data.status)) {
     return { isValid: false, message: "Invalid status value." };
   }
 
@@ -25,9 +26,19 @@ function validateItemFields(data) {
   return { isValid: true };
 }
 
+function validateSprintFields(data) {
+  if (data.status && !ALLOWED_SPRINT_STATUSES.includes(data.status)) {
+    return { isValid: false, message: "Invalid sprint status value." };
+  }
+
+  return { isValid: true };
+}
+
 module.exports = {
   validateRequiredFields,
   validateItemFields,
-  ALLOWED_STATUSES,
+  validateSprintFields,
+  ALLOWED_ITEM_STATUSES,
   ALLOWED_PRIORITIES,
+  ALLOWED_SPRINT_STATUSES,
 };

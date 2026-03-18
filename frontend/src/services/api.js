@@ -1,6 +1,10 @@
 const API_BASE_URL = "http://localhost:3001";
 
-// Fetch all work items from the backend API
+// =========================
+// ITEM API FUNCTIONS
+// =========================
+
+// Fetch all work items from the backend
 export async function getItems() {
   const response = await fetch(`${API_BASE_URL}/items`);
 
@@ -11,7 +15,7 @@ export async function getItems() {
   return response.json();
 }
 
-// Send a new work item to the backend API
+// Create a new work item
 export async function createItem(itemData) {
   const response = await fetch(`${API_BASE_URL}/items`, {
     method: "POST",
@@ -56,6 +60,71 @@ export async function deleteItem(itemId) {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Failed to delete item.");
+  }
+
+  return response.json();
+}
+
+// =========================
+// SPRINT API FUNCTIONS
+// =========================
+
+// Fetch all sprints from the backend
+export async function getSprints() {
+  const response = await fetch(`${API_BASE_URL}/sprints`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch sprints.");
+  }
+
+  return response.json();
+}
+
+// Create a new sprint
+export async function createSprint(sprintData) {
+  const response = await fetch(`${API_BASE_URL}/sprints`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(sprintData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to create sprint.");
+  }
+
+  return response.json();
+}
+
+// Update an existing sprint by id
+export async function updateSprint(sprintId, sprintData) {
+  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(sprintData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update sprint.");
+  }
+
+  return response.json();
+}
+
+// Delete a sprint by id
+export async function deleteSprint(sprintId) {
+  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to delete sprint.");
   }
 
   return response.json();

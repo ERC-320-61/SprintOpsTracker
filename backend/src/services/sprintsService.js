@@ -42,7 +42,7 @@ async function createSprint(data) {
     goal: data.goal || "",
     startDate: data.startDate || "",
     endDate: data.endDate || "",
-    status: data.status || "planned",
+    status: data.status || "Planned",
     createdAt: now,
     updatedAt: now,
   };
@@ -98,10 +98,19 @@ async function deleteSprint(sprintId) {
   return true;
 }
 
+// Get the currently active sprint.
+// For now, assume there is at most one active sprint at a time.
+async function getActiveSprint() {
+  const allSprints = await getAllSprints();
+
+  return allSprints.find((sprint) => sprint.status === "Active") || null;
+}
+
 module.exports = {
   getAllSprints,
   getSprintById,
   createSprint,
   updateSprint,
   deleteSprint,
+  getActiveSprint,
 }; 

@@ -9,12 +9,24 @@ const {
   createSprint,
   updateSprint,
   deleteSprint,
+  getActiveSprint,
 } = require("../services/sprintsService");
 
 async function sprintsHandler(event) {
   try {
     const method = event.httpMethod;
     const sprintId = event.pathParameters?.id;
+
+        // GET /sprints/active
+    if (method === "GET" && sprintId === "active") {
+      const sprint = await getActiveSprint();
+
+      if (!sprint) {
+        return buildResponse(404, { message: "No active sprint found." });
+      }
+
+      return buildResponse(200, sprint);
+    }
 
     // GET /sprints/:id
     if (method === "GET" && sprintId) {

@@ -129,3 +129,25 @@ export async function deleteSprint(sprintId) {
 
   return response.json();
 }
+
+// Fetch the currently active sprint
+export async function getActiveSprint() {
+  const response = await fetch(`${API_BASE_URL}/sprints/active`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch active sprint.");
+  }
+
+  return response.json();
+}
+
+// Fetch a single sprint by id
+export async function getSprintById(sprintId) {
+  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch sprint.");
+  }
+
+  return response.json();
+}

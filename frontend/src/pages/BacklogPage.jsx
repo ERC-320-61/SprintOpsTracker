@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { getItems, createItem, updateItem, deleteItem } from "../services/api";
+import { getItems, createItem, updateItem, deleteItem, getSprints } from "../services/api";
 
 function BacklogPage() {
+  // Store available sprints so items can be assigned to one
+  const [sprints, setSprints] = useState([]);
+
   // Store the list of work items shown on the page
   const [items, setItems] = useState([]);
 
@@ -26,6 +29,16 @@ function BacklogPage() {
   const statusOptions = ["Backlog", "Ready", "In Progress", "Blocked", "Done"];
   const priorityOptions = ["Low", "Medium", "High", "Critical"];
 
+  // Load all sprints so the backlog can assign items to a sprint
+  async function loadSprints() {
+    try {
+      const data = await getSprints();
+      setSprints(data);
+    } catch (err) {
+      setError("Failed to load sprints.");
+    }
+  }
+
   // Load all items from the backend and update page state
   async function loadItems() {
     try {
@@ -44,6 +57,7 @@ function BacklogPage() {
   // Run once when the page first loads
   useEffect(() => {
     loadItems();
+    loadSprints();
   }, []);
 
   // Handle form submission for creating a new work item
@@ -133,6 +147,29 @@ function BacklogPage() {
     }
   }
 
+  // Assign an item to a sprint by updating its sprintId
+  async function handleAssignSprint(item, sprintId) {
+    try {
+      setError("");
+
+      await updateItem(item.itemId, {
+        title: item.title,
+        status: item.status,
+        priority: item.priority,
+        description: item.description,
+        storyPoints: item.storyPoints,
+        assignee: item.assignee,
+        labels: item.labels,
+        sprintId: sprintId || null,
+        projectId: item.projectId,
+      });
+
+      await loadItems();
+    } catch (err) {
+      setError(err.message || "Failed to assign item to sprint.");
+    }
+  }
+
   return (
     <div>
       <h1>Backlog</h1>
@@ -193,6 +230,19 @@ function BacklogPage() {
                     {priorityOptions.map((priority) => (
                       <option key={priority} value={priority}>
                         {priority}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={item.sprintId || ""}
+                    onChange={(event) => handleAssignSprint(item, event.target.value)}
+                    style={{ marginLeft: "0.75rem" }}
+                  >
+                    <option value="">No Sprint</option>
+                    {sprints.map((sprint) => (
+                      <option key={sprint.sprintId} value={sprint.sprintId}>
+                        {sprint.name}
                       </option>
                     ))}
                   </select>

@@ -8,4 +8,22 @@ function buildResponse(statusCode, body) {
   };
 }
 
-module.exports = { buildResponse };
+function successResponse(data) {
+  return {
+    success: true,
+    data,
+  };
+}
+
+function errorResponse(message) {
+  return {
+    success: false,
+    error: message,
+  };
+}
+
+module.exports = {
+  buildResponse,
+  successResponse,
+  errorResponse,
+};

@@ -151,3 +151,14 @@ export async function getSprintById(sprintId) {
 
   return response.json();
 }
+
+// Fetch the dashboard summary
+export async function getDashboardSummary() {
+  const response = await fetch(`${API_BASE_URL}/dashboard/summary`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch dashboard.");
+  }
+
+  return response.json();
+}

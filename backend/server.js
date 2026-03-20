@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { itemsHandler } = require("./src/handlers/itemsHandler");
 const { sprintsHandler } = require("./src/handlers/sprintsHandler");
+const { getDashboardSummaryHandler } = require("./src/handlers/dashboardHandler");
 
 const app = express();
 const PORT = 3001;
@@ -110,6 +111,10 @@ app.delete("/sprints/:id", async (req, res) => {
 
   res.status(result.statusCode).json(JSON.parse(result.body));
 });
+
+// Dashboard route
+app.get("/dashboard/summary", getDashboardSummaryHandler);
+
 
 app.listen(PORT, () => {
   console.log(`SprintOpsTracker backend running on http://localhost:${PORT}`);

@@ -8,7 +8,7 @@ const {
 const { dynamoDb } = require("../utils/dynamoClient");
 
 // Table name is configurable, but defaults to WorkItems
-const TABLE_NAME = process.env.WORK_ITEMS_TABLE || "WorkItems";
+const TABLE_NAME = process.env.WORK_ITEMS_TABLE_NAME || "WorkItems";
 
 // Get all items from the table
 async function getAllItems() {

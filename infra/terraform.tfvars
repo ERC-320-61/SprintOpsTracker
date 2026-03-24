@@ -1,0 +1,6 @@
+aws_region            = "us-east-1"
+project_name          = "sprintopstracker"
+environment           = "dev"
+frontend_bucket_name  = "sprintopstracker-frontend-dev"
+work_items_table_name = "WorkItems"
+sprints_table_name    = "Sprints"

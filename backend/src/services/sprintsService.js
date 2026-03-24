@@ -8,7 +8,7 @@ const {
 const { dynamoDb } = require("../utils/dynamoClient");
 
 // Table name is configurable, but defaults to Sprints
-const TABLE_NAME = process.env.SPRINTS_TABLE || "Sprints";
+const TABLE_NAME = process.env.SPRINTS_TABLE_NAME || "Sprints";
 
 // Get all sprints from DynamoDB
 async function getAllSprints() {

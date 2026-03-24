@@ -8,12 +8,17 @@ node_modules/
 dist/
 build/
 
+# Backend deployment artifacts
+backend/dist/
+*.zip
+
 # Environment files
 .env
 .env.*
+!.env.example
 
 # Terraform
-.terraform/
+**/.terraform/
 *.tfstate
 *.tfstate.*
 crash.log
@@ -21,6 +26,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+.terraform.lock.hcl
 
 # OS / editor clutter
 .DS_Store

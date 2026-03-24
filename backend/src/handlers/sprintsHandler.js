@@ -14,7 +14,7 @@ const {
 
 async function sprintsHandler(event) {
   try {
-    const method = event.httpMethod;
+    const method = event.httpMethod || event.requestContext?.http?.method;
     const sprintId = event.pathParameters?.id;
 
         // GET /sprints/active

@@ -65,12 +65,12 @@ function SprintBoardPage() {
   }
 
   function handleDragStart(itemId) {
-  setDraggedItemId(itemId);
-}
+    setDraggedItemId(itemId);
+  }
 
-function handleDragEnd() {
-  setDraggedItemId(null);
-}
+  function handleDragEnd() {
+    setDraggedItemId(null);
+  }
 
 async function handleDropStatus(newStatus) {
   if (!draggedItemId) {

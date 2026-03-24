@@ -1,8 +1,8 @@
 const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
 const { dynamoDb } = require("../utils/dynamoClient");
 
-const WORK_ITEMS_TABLE = "WorkItems";
-const SPRINTS_TABLE = "Sprints";
+const WORK_ITEMS_TABLE = process.env.WORK_ITEMS_TABLE_NAME || "WorkItems";
+const SPRINTS_TABLE = process.env.SPRINTS_TABLE_NAME || "Sprints";
 
 async function getDashboardSummary() {
   // Read all work items and sprints in parallel for the dashboard summary.

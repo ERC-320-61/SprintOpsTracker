@@ -113,8 +113,19 @@ app.delete("/sprints/:id", async (req, res) => {
 });
 
 // Dashboard route
-app.get("/dashboard/summary", getDashboardSummaryHandler);
+// Old Express route
+// app.get("/dashboard/summary", getDashboardSummaryHandler);
 
+// Dashboard route
+app.get("/dashboard/summary", async (req, res) => {
+  const result = await getDashboardSummaryHandler({
+    httpMethod: "GET",
+    pathParameters: {},
+    body: null,
+  });
+
+  res.status(result.statusCode).json(JSON.parse(result.body));
+}); 
 
 app.listen(PORT, () => {
   console.log(`SprintOpsTracker backend running on http://localhost:${PORT}`);

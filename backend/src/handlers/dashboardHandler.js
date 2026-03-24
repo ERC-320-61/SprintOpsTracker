@@ -1,21 +1,24 @@
 const { getDashboardSummary } = require("../services/dashboardService");
-const { successResponse, errorResponse } = require("../utils/response");
+const { buildResponse } = require("../utils/response");
 
+
+
+// Lambda style
 // Handles the dashboard summary request and returns aggregated dashboard data.
-async function getDashboardSummaryHandler(req, res) {
+async function getDashboardSummaryHandler(event) {
   try {
     const summary = await getDashboardSummary();
-    return res.status(200).json(successResponse(summary));
+    return buildResponse(200, summary);
   } catch (error) {
-    console.error("Error getting dashboard summary:", error);
-    return res.status(500).json({
-      success: false,
+    console.error("dashboardHandler error:", error);
+
+    return buildResponse(500, {
+      message: "Failed to get dashboard summary.",
       error: error.message,
-      errorType: typeof errorResponse,
     });
   }
 }
 
 module.exports = {
-  getDashboardSummaryHandler,
+  getDashboardSummaryHandler
 };

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "personal-learning-notes/Day 5.md",
+                "file": "build-notes/build-phases.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Day 5"
+              "title": "build-phases"
             }
           },
           {
@@ -75,12 +75,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "personal-learning-notes/Day 4.md",
+                "file": "personal-learning-notes/Day 6.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Day 4"
+              "title": "Day 6"
             }
           },
           {
@@ -288,11 +288,13 @@
       "bases:Create new base": false
     }
   },
-  "active": "ec0b48240656f232",
+  "active": "08e7eb9e5aa33bc9",
   "lastOpenFiles": [
     "build-notes/build-phases.md",
-    "personal-learning-notes/Day 5.md",
+    "personal-learning-notes/Day 6.md",
+    "build-notes/Phase 9 - AWS Infrastructure and Deployment.md",
     "personal-learning-notes/Day 4.md",
+    "personal-learning-notes/Day 5.md",
     "security/security-baseline.md",
     "project-overview.md",
     "planning/tech-stack.md",

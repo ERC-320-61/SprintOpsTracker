@@ -13,7 +13,7 @@ const {
 
 async function itemsHandler(event) {
   try {
-    const method = event.httpMethod;
+    const method = event.httpMethod || event.requestContext?.http?.method;
     const itemId = event.pathParameters?.id;
 
     // GET /items/:id

@@ -1,0 +1,21 @@
+# Main API framework
+fastapi
+
+# Runs the FastAPI app locally and in Docker/ECS
+uvicorn[standard]
+
+# Allows FastAPI to run inside AWS Lambda behind API Gateway
+mangum
+
+# AWS SDK for Python
+# Used for DynamoDB, SQS, SNS, Cognito, etc.
+boto3
+
+# Allows local environment variables to be loaded from a .env file
+python-dotenv
+
+# Data validation and request/response models
+pydantic
+
+# Clean application configuration using environment variables
+pydantic-settings

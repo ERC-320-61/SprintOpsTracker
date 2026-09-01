@@ -2,15 +2,6 @@ import os
 import uuid
 from pathlib import Path
 
-import pytest
-from alembic import command
-from alembic.config import Config
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session
-
-from app.models.user import User
-from app.services.tasks import create_task
-
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 ALEMBIC_INI = BACKEND_DIR / "alembic.ini"
 
@@ -18,6 +9,19 @@ TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
     "postgresql+psycopg://postgres:postgres@localhost:55432/sot_test",
 )
+# Point the application at the test database *before* importing anything under
+# `app` (settings and the engine are created at import time).
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+
+import pytest  # noqa: E402
+from alembic import command  # noqa: E402
+from alembic.config import Config  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.orm import Session  # noqa: E402
+
+from app.core.db import engine as app_engine  # noqa: E402
+from app.models.user import User  # noqa: E402
+from app.services.tasks import create_task  # noqa: E402
 
 # Child-first order for TRUNCATE ... CASCADE.
 ALL_TABLES = (
@@ -39,14 +43,10 @@ def _alembic_config() -> Config:
 
 @pytest.fixture(scope="session")
 def engine():
-    os.environ["DATABASE_URL"] = TEST_DATABASE_URL
     command.upgrade(_alembic_config(), "head")
-    eng = create_engine(TEST_DATABASE_URL, future=True)
-    # Start from a clean slate regardless of what a previous run or a seed left.
-    with eng.begin() as conn:
+    with app_engine.begin() as conn:
         conn.execute(text(f"TRUNCATE {', '.join(ALL_TABLES)} CASCADE"))
-    yield eng
-    eng.dispose()
+    return app_engine
 
 
 @pytest.fixture

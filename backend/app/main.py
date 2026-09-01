@@ -1,12 +1,13 @@
 from fastapi import FastAPI
-from app.api import dashboard, tasks, sprints
+
+from app.api import api_router
+from app.errors import register_error_handlers
 
 app = FastAPI(title="SprintOpsTracker API")
+register_error_handlers(app)
+app.include_router(api_router)
 
-app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
-app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
-app.include_router(sprints.router, prefix="/sprints", tags=["Sprints"])
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+@app.get("/health", tags=["meta"])
+def health() -> dict[str, str]:
+    return {"status": "ok"}

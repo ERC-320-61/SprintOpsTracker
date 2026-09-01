@@ -58,4 +58,11 @@ describe("request()", () => {
     mockFetch({ ok: true, status: 204, json: () => Promise.reject() });
     await expect(request("/x", { method: "DELETE" })).resolves.toBeNull();
   });
+
+  it("falls back to a same-origin /api/v1 URL when VITE_API_BASE_URL is empty", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    const fetchFn = mockFetch(jsonResponse({ items: [] }));
+    await request("/projects/SOT/tasks", { params: { limit: 10 } });
+    expect(fetchFn.mock.calls[0][0]).toBe("/api/v1/projects/SOT/tasks?limit=10");
+  });
 });

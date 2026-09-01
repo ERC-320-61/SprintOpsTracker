@@ -8,6 +8,8 @@ export class ApiError extends Error {
 }
 
 function buildUrl(path, params) {
+  // VITE_API_BASE_URL unset or empty => same-origin: requests target /api/v1/...
+  // on whatever host serves the app (e.g. one domain fronted by CloudFront).
   const origin = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
   const base = `${origin}/api/v1${path}`;
   if (!params) return base;

@@ -38,7 +38,7 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-.terraform.lock.hcl
+# .terraform.lock.hcl is committed on purpose (reproducible provider versions)
 
 # OS / editor clutter
 .DS_Store

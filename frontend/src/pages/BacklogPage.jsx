@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import {
-  getItems,
-  createItem,
-  updateItem,
-  deleteItem,
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
   getSprints,
 } from "../services/api";
 
@@ -14,15 +14,15 @@ function BacklogPage() {
   const [createSprintId, setCreateSprintId] = useState("");
 
   const [sprints, setSprints] = useState([]);
-  const [items, setItems] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  const [editingItemId, setEditingItemId] = useState(null);
-  const [expandedItemId, setExpandedItemId] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [hoveredDeleteId, setHoveredDeleteId] = useState(null);
 
   const [editTitle, setEditTitle] = useState("");
@@ -43,22 +43,22 @@ function BacklogPage() {
     }
   }
 
-  async function loadItems() {
+  async function loadTasks() {
     try {
       setLoading(true);
       setError("");
 
-      const data = await getItems();
-      setItems(data);
+      const data = await getTasks();
+      setTasks(data);
     } catch (err) {
-      setError("Failed to load backlog items.");
+      setError("Failed to load backlog tasks.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadItems();
+    loadTasks();
     loadSprints();
   }, []);
 
@@ -73,7 +73,7 @@ function BacklogPage() {
     try {
       setError("");
 
-      await createItem({
+      await createTask({
         title: title.trim(),
         description: description.trim(),
         status: createStatus,
@@ -87,33 +87,33 @@ function BacklogPage() {
       setCreatePriority("Medium");
       setCreateSprintId("");
       setShowCreateForm(false);
-      await loadItems();
+      await loadTasks();
     } catch (err) {
-      setError(err.message || "Failed to create item.");
+      setError(err.message || "Failed to create task.");
     }
   }
 
-  function handleEditStart(item) {
-    setEditingItemId(item.itemId);
-    setExpandedItemId(item.itemId);
-    setEditTitle(item.title || "");
-    setEditStatus(item.status || "Backlog");
-    setEditPriority(item.priority || "Medium");
-    setEditDescription(item.description || "");
-    setEditSprintId(item.sprintId || "");
+  function handleEditStart(task) {
+    setEditingTaskId(task.taskId);
+    setExpandedTaskId(task.taskId);
+    setEditTitle(task.title || "");
+    setEditStatus(task.status || "Backlog");
+    setEditPriority(task.priority || "Medium");
+    setEditDescription(task.description || "");
+    setEditSprintId(task.sprintId || "");
     setError("");
   }
 
   function handleEditCancel() {
-    setEditingItemId(null);
-    setExpandedItemId(null);
+    setEditingTaskId(null);
+    setExpandedTaskId(null);
     setEditTitle("");
     setEditStatus("Backlog");
     setEditPriority("Medium");
     setEditDescription("");
     setEditSprintId("");
   }
-  async function handleEditSave(item) {
+  async function handleEditSave(task) {
     if (!editTitle.trim()) {
       setError("Edited title is required.");
       return;
@@ -122,43 +122,43 @@ function BacklogPage() {
     try {
       setError("");
 
-      await updateItem(item.itemId, {
+      await updateTask(task.taskId, {
         title: editTitle.trim(),
         status: editStatus,
         priority: editPriority,
         description: editDescription.trim(),
-        storyPoints: item.storyPoints,
-        assignee: item.assignee,
-        labels: item.labels,
+        storyPoints: task.storyPoints,
+        assignee: task.assignee,
+        labels: task.labels,
         sprintId: editSprintId || null,
-        projectId: item.projectId,
+        projectId: task.projectId,
       });
 
-      setEditingItemId(null);
+      setEditingTaskId(null);
       setEditTitle("");
       setEditStatus("Backlog");
       setEditPriority("Medium");
       setEditDescription("");
       setEditSprintId("");
 
-      await loadItems();
+      await loadTasks();
     } catch (err) {
-      setError(err.message || "Failed to update item.");
+      setError(err.message || "Failed to update task.");
     }
   }
 
-  async function handleDelete(itemId) {
+  async function handleDelete(taskId) {
     try {
       setError("");
-      await deleteItem(itemId);
-      await loadItems();
+      await deleteTask(taskId);
+      await loadTasks();
     } catch (err) {
-      setError(err.message || "Failed to delete item.");
+      setError(err.message || "Failed to delete task.");
     }
   }
 
-  function toggleExpanded(itemId) {
-    setExpandedItemId((current) => (current === itemId ? null : itemId));
+  function toggleExpanded(taskId) {
+    setExpandedTaskId((current) => (current === taskId ? null : taskId));
   }
 
   const pageStyle = {
@@ -352,7 +352,7 @@ function BacklogPage() {
     <div style={pageStyle}>
       <h1 style={headerTitleStyle}>Backlog Management</h1>
       <p style={headerSubtitleStyle}>
-        Track backlog items, update workflow state, and manage item details from
+        Track backlog tasks, update workflow state, and manage task details from
         a single view.
       </p>
 
@@ -370,9 +370,9 @@ function BacklogPage() {
           }}
         >
           <div style={{ textAlign: "left" }}>
-            <h2 style={panelTitleStyle}>Create Backlog Item</h2>
+            <h2 style={panelTitleStyle}>Create Backlog Task</h2>
             <p style={panelSubtitleStyle}>
-              Add a new work item to the backlog with an optional description.
+              Add a new task to the backlog with an optional description.
             </p>
           </div>
 
@@ -381,7 +381,7 @@ function BacklogPage() {
             onClick={() => setShowCreateForm((current) => !current)}
             style={primaryButtonStyle}
           >
-            {showCreateForm ? "Close" : "Add Item"}
+            {showCreateForm ? "Close" : "Add Task"}
           </button>
         </div>
 
@@ -400,7 +400,7 @@ function BacklogPage() {
                 <p style={itemLabelStyle}>Title</p>
                 <input
                   type="text"
-                  placeholder="Enter work item title"
+                  placeholder="Enter task title"
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   style={inputStyle}
@@ -457,7 +457,7 @@ function BacklogPage() {
             <div style={{ ...itemFieldStyle, marginTop: "0.75rem" }}>
               <p style={itemLabelStyle}>Description</p>
               <textarea
-                placeholder="Add work item description"
+                placeholder="Add task description"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 style={textareaStyle}
@@ -466,7 +466,7 @@ function BacklogPage() {
 
             <div style={editActionRowStyle}>
               <button type="submit" style={primaryButtonStyle}>
-                Save Item
+                Save Task
               </button>
 
               <button
@@ -494,67 +494,67 @@ function BacklogPage() {
 
 
       <section style={panelStyle}>
-        <h2 style={panelTitleStyle}>Backlog Items</h2>
+        <h2 style={panelTitleStyle}>Backlog Tasks</h2>
         <p style={panelSubtitleStyle}>
-          Review, update, and expand individual backlog items.
+          Review, update, and expand individual backlog tasks.
         </p>
 
-        {loading && <p style={{ color: "#334155" }}>Loading backlog items...</p>}
+        {loading && <p style={{ color: "#334155" }}>Loading backlog tasks...</p>}
 
         {error && (
           <p style={{ color: "#b91c1c", marginBottom: "1rem" }}>{error}</p>
         )}
 
-        {!loading && items.length === 0 ? (
-          <p style={{ color: "#334155" }}>No backlog items found.</p>
+        {!loading && tasks.length === 0 ? (
+          <p style={{ color: "#334155" }}>No backlog tasks found.</p>
         ) : (
           <div style={itemListStyle}>
-            {items.map((item) => {
-              const isEditing = editingItemId === item.itemId;
-              const isExpanded = expandedItemId === item.itemId;
+            {tasks.map((task) => {
+              const isEditing = editingTaskId === task.taskId;
+              const isExpanded = expandedTaskId === task.taskId;
 
               return (
-                <div key={item.itemId} style={itemCardStyle}>
+                <div key={task.taskId} style={itemCardStyle}>
                   <div style={isEditing ? itemRowEditModeStyle : itemRowStyle}>
                     <div style={itemFieldStyle}>
                       <p style={itemLabelStyle}>Title</p>
-                      <p style={itemValueStyle}>{item.title}</p>
+                      <p style={itemValueStyle}>{task.title}</p>
                     </div>
 
                     <div style={itemFieldStyle}>
                       <p style={itemLabelStyle}>Status</p>
-                      <p style={itemValueStyle}>{item.status}</p>
+                      <p style={itemValueStyle}>{task.status}</p>
                     </div>
 
                     <div style={itemFieldStyle}>
                       <p style={itemLabelStyle}>Priority</p>
-                      <p style={itemValueStyle}>{item.priority}</p>
+                      <p style={itemValueStyle}>{task.priority}</p>
                     </div>
 
                     <div style={actionsStyle}>
                       <button
-                        onClick={() => handleEditStart(item)}
+                        onClick={() => handleEditStart(task)}
                         style={secondaryButtonStyle}
                       >
                         Edit
                       </button>
 
                       <button
-                        onClick={() => handleDelete(item.itemId)}
-                        onMouseEnter={() => setHoveredDeleteId(item.itemId)}
+                        onClick={() => handleDelete(task.taskId)}
+                        onMouseEnter={() => setHoveredDeleteId(task.taskId)}
                         onMouseLeave={() => setHoveredDeleteId(null)}
                         style={{
                           ...secondaryButtonStyle,
                           border:
-                            hoveredDeleteId === item.itemId
+                            hoveredDeleteId === task.taskId
                               ? "1px solid #dc2626"
                               : "1px solid #cbd5e1",
                           backgroundColor:
-                            hoveredDeleteId === item.itemId
+                            hoveredDeleteId === task.taskId
                               ? "#dc2626"
                               : "#ffffff",
                           color:
-                            hoveredDeleteId === item.itemId
+                            hoveredDeleteId === task.taskId
                               ? "#ffffff"
                               : "#1f2937",
                         }}
@@ -563,7 +563,7 @@ function BacklogPage() {
                       </button>
 
                       <button
-                        onClick={() => toggleExpanded(item.itemId)}
+                        onClick={() => toggleExpanded(task.taskId)}
                         style={detailsButtonStyle}
                       >
                         {isExpanded ? "Hide Details" : "View Details"}
@@ -578,7 +578,7 @@ function BacklogPage() {
                           <p style={itemLabelStyle}>Title</p>
                           <input
                             type="text"
-                            placeholder="Enter work item title"
+                            placeholder="Enter task title"
                             value={editTitle}
                             onChange={(event) => setEditTitle(event.target.value)}
                             style={inputStyle}
@@ -635,7 +635,7 @@ function BacklogPage() {
                       <div style={{ ...itemFieldStyle, marginTop: "0.75rem" }}>
                         <p style={itemLabelStyle}>Description</p>
                         <textarea
-                          placeholder="Add work item description"
+                          placeholder="Add task description"
                           value={editDescription}
                           onChange={(event) => setEditDescription(event.target.value)}
                           style={textareaStyle}
@@ -645,7 +645,7 @@ function BacklogPage() {
                       <div style={editActionRowStyle}>
                         <button
                           type="button"
-                          onClick={() => handleEditSave(item)}
+                          onClick={() => handleEditSave(task)}
                           style={primaryButtonStyle}
                         >
                           Save
@@ -668,8 +668,8 @@ function BacklogPage() {
                         Description
                       </p>
                       <p style={detailTextStyle}>
-                        {item.description && item.description.trim()
-                          ? item.description
+                        {task.description && task.description.trim()
+                          ? task.description
                           : "No description provided."}
                       </p>
                     </div>

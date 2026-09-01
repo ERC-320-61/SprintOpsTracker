@@ -153,23 +153,23 @@ function DashboardPage() {
 
           <div style={statsGridStyle}>
             <div style={statCardStyle}>
-              <p style={labelStyle}>Total Items</p>
-              <p style={valueStyle}>{projectSummary.totalItems}</p>
+              <p style={labelStyle}>Total Tasks</p>
+              <p style={valueStyle}>{projectSummary.totalTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>In Progress</p>
-              <p style={valueStyle}>{projectSummary.inProgressItems}</p>
+              <p style={valueStyle}>{projectSummary.inProgressTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>Blocked</p>
-              <p style={valueStyle}>{projectSummary.blockedItems}</p>
+              <p style={valueStyle}>{projectSummary.blockedTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>Done</p>
-              <p style={valueStyle}>{projectSummary.doneItems}</p>
+              <p style={valueStyle}>{projectSummary.doneTasks}</p>
             </div>
           </div>
         </div>
@@ -195,8 +195,8 @@ function DashboardPage() {
               </div>
 
               <div style={sprintDetailCardStyle}>
-                <p style={labelStyle}>Assigned Items</p>
-                <p style={valueStyle}>{activeSprint.itemCount}</p>
+                <p style={labelStyle}>Assigned Tasks</p>
+                <p style={valueStyle}>{activeSprint.taskCount}</p>
               </div>
             </div>
           ) : (
@@ -213,33 +213,33 @@ function DashboardPage() {
         <div style={panelStyle}>
           <h2 style={panelTitleStyle}>Status Breakdown</h2>
           <p style={panelSubtitleStyle}>
-            Item counts by workflow stage.
+            Task counts by workflow stage.
           </p>
 
           <div style={smallGridStyle}>
             <div style={statCardStyle}>
               <p style={labelStyle}>Backlog</p>
-              <p style={valueStyle}>{projectSummary.backlogItems}</p>
+              <p style={valueStyle}>{projectSummary.backlogTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>Ready</p>
-              <p style={valueStyle}>{projectSummary.readyItems}</p>
+              <p style={valueStyle}>{projectSummary.readyTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>In Progress</p>
-              <p style={valueStyle}>{projectSummary.inProgressItems}</p>
+              <p style={valueStyle}>{projectSummary.inProgressTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>Blocked</p>
-              <p style={valueStyle}>{projectSummary.blockedItems}</p>
+              <p style={valueStyle}>{projectSummary.blockedTasks}</p>
             </div>
 
             <div style={statCardStyle}>
               <p style={labelStyle}>Done</p>
-              <p style={valueStyle}>{projectSummary.doneItems}</p>
+              <p style={valueStyle}>{projectSummary.doneTasks}</p>
             </div>
           </div>
         </div>
@@ -249,7 +249,7 @@ function DashboardPage() {
         <div style={panelStyle}>
           <h2 style={panelTitleStyle}>Priority Breakdown</h2>
           <p style={panelSubtitleStyle}>
-            Item counts by assigned priority level.
+            Task counts by assigned priority level.
           </p>
 
           <div style={smallGridStyle}>

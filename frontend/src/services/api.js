@@ -1,65 +1,65 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // =========================
-// ITEM API FUNCTIONS
+// TASK API FUNCTIONS
 // =========================
 
-// Fetch all work items from the backend
-export async function getItems() {
-  const response = await fetch(`${API_BASE_URL}/items`);
+// Fetch all tasks from the backend
+export async function getTasks() {
+  const response = await fetch(`${API_BASE_URL}/tasks`);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch items.");
+    throw new Error("Failed to fetch tasks.");
   }
 
   return response.json();
 }
 
-// Create a new work item
-export async function createItem(itemData) {
-  const response = await fetch(`${API_BASE_URL}/items`, {
+// Create a new task
+export async function createTask(taskData) {
+  const response = await fetch(`${API_BASE_URL}/tasks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(itemData),
+    body: JSON.stringify(taskData),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create item.");
+    throw new Error(errorData.message || "Failed to create task.");
   }
 
   return response.json();
 }
 
-// Update an existing work item by id
-export async function updateItem(itemId, itemData) {
-  const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
+// Update an existing task by id
+export async function updateTask(taskId, taskData) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(itemData),
+    body: JSON.stringify(taskData),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to update item.");
+    throw new Error(errorData.message || "Failed to update task.");
   }
 
   return response.json();
 }
 
-// Delete a work item by id
-export async function deleteItem(itemId) {
-  const response = await fetch(`${API_BASE_URL}/items/${itemId}`, {
+// Delete a task by id
+export async function deleteTask(taskId) {
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: "DELETE",
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to delete item.");
+    throw new Error(errorData.message || "Failed to delete task.");
   }
 
   return response.json();

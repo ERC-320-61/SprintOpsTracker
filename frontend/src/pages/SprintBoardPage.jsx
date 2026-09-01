@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getActiveSprint, getItems, updateItem } from "../services/api";
+import { getActiveSprint, getTasks, updateTask } from "../services/api";
 
 function SprintBoardPage() {
-  const [draggedItemId, setDraggedItemId] = useState(null);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [activeSprint, setActiveSprint] = useState(null);
-  const [items, setItems] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -17,18 +17,18 @@ function SprintBoardPage() {
       setError("");
 
       const sprint = await getActiveSprint();
-      const allItems = await getItems();
+      const allTasks = await getTasks();
 
-      const sprintItems = allItems.filter(
-        (item) => item.sprintId === sprint.sprintId
+      const sprintTasks = allTasks.filter(
+        (task) => task.sprintId === sprint.sprintId
       );
 
       setActiveSprint(sprint);
-      setItems(sprintItems);
+      setTasks(sprintTasks);
     } catch (err) {
       setError(err.message || "Failed to load sprint board.");
       setActiveSprint(null);
-      setItems([]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -38,72 +38,72 @@ function SprintBoardPage() {
     loadBoardData();
   }, []);
 
-  async function handleStatusChange(item, newStatus) {
+  async function handleStatusChange(task, newStatus) {
     try {
       setError("");
 
-      await updateItem(item.itemId, {
-        title: item.title,
+      await updateTask(task.taskId, {
+        title: task.title,
         status: newStatus,
-        priority: item.priority,
-        description: item.description,
-        storyPoints: item.storyPoints,
-        assignee: item.assignee,
-        labels: item.labels,
-        sprintId: item.sprintId,
-        projectId: item.projectId,
+        priority: task.priority,
+        description: task.description,
+        storyPoints: task.storyPoints,
+        assignee: task.assignee,
+        labels: task.labels,
+        sprintId: task.sprintId,
+        projectId: task.projectId,
       });
 
       await loadBoardData();
     } catch (err) {
-      setError(err.message || "Failed to update item status.");
+      setError(err.message || "Failed to update task status.");
     }
   }
 
-  function getItemsByStatus(status) {
-    return items.filter((item) => item.status === status);
+  function getTasksByStatus(status) {
+    return tasks.filter((task) => task.status === status);
   }
 
-  function handleDragStart(itemId) {
-    setDraggedItemId(itemId);
+  function handleDragStart(taskId) {
+    setDraggedTaskId(taskId);
   }
 
   function handleDragEnd() {
-    setDraggedItemId(null);
+    setDraggedTaskId(null);
   }
 
 async function handleDropStatus(newStatus) {
-  if (!draggedItemId) {
+  if (!draggedTaskId) {
     return;
   }
 
-  const item = items.find((entry) => entry.itemId === draggedItemId);
+  const task = tasks.find((entry) => entry.taskId === draggedTaskId);
 
-  if (!item || item.status === newStatus) {
-    setDraggedItemId(null);
+  if (!task || task.status === newStatus) {
+    setDraggedTaskId(null);
     return;
   }
 
   try {
     setError("");
 
-    await updateItem(item.itemId, {
-      title: item.title,
+    await updateTask(task.taskId, {
+      title: task.title,
       status: newStatus,
-      priority: item.priority,
-      description: item.description,
-      storyPoints: item.storyPoints,
-      assignee: item.assignee,
-      labels: item.labels,
-      sprintId: item.sprintId,
-      projectId: item.projectId,
+      priority: task.priority,
+      description: task.description,
+      storyPoints: task.storyPoints,
+      assignee: task.assignee,
+      labels: task.labels,
+      sprintId: task.sprintId,
+      projectId: task.projectId,
     });
 
-    setDraggedItemId(null);
+    setDraggedTaskId(null);
     await loadBoardData();
   } catch (err) {
-    setError(err.message || "Failed to move item.");
-    setDraggedItemId(null);
+    setError(err.message || "Failed to move task.");
+    setDraggedTaskId(null);
   }
 }
 
@@ -356,15 +356,15 @@ async function handleDropStatus(newStatus) {
           </div>
 
           <div style={sprintMetaCardStyle}>
-            <p style={metaLabelStyle}>Assigned Items</p>
-            <p style={metaValueStyle}>{items.length}</p>
+            <p style={metaLabelStyle}>Assigned Tasks</p>
+            <p style={metaValueStyle}>{tasks.length}</p>
           </div>
         </div>
       </section>
 
       <section style={boardGridStyle}>
         {statuses.map((status) => {
-          const columnItems = getItemsByStatus(status);
+          const columnTasks = getTasksByStatus(status);
 
           return (
             <div
@@ -376,29 +376,29 @@ async function handleDropStatus(newStatus) {
               <div style={columnHeaderStyle}>
                 <h3 style={columnTitleStyle}>{status}</h3>
                 <p style={columnCountStyle}>
-                  {columnItems.length} {columnItems.length === 1 ? "item" : "items"}
+                  {columnTasks.length} {columnTasks.length === 1 ? "task" : "tasks"}
                 </p>
               </div>
 
               <div style={columnBodyStyle}>
-                {columnItems.length === 0 ? (
-                  <div style={emptyStateStyle}>No items</div>
+                {columnTasks.length === 0 ? (
+                  <div style={emptyStateStyle}>No tasks</div>
                 ) : (
-                  columnItems.map((item) => (
+                  columnTasks.map((task) => (
                     <div
-                      key={item.itemId}
+                      key={task.taskId}
                       draggable
-                      onDragStart={() => handleDragStart(item.itemId)}
+                      onDragStart={() => handleDragStart(task.taskId)}
                       onDragEnd={handleDragEnd}
                       style={
-                        draggedItemId === item.itemId ? draggingCardStyle : cardStyle
+                        draggedTaskId === task.taskId ? draggingCardStyle : cardStyle
                       }
                     >
-                      <h4 style={cardTitleStyle}>{item.title}</h4>
+                      <h4 style={cardTitleStyle}>{task.title}</h4>
 
                       <div style={cardFieldStyle}>
                         <p style={cardLabelStyle}>Priority</p>
-                        <p style={cardValueStyle}>{item.priority || "None"}</p>
+                        <p style={cardValueStyle}>{task.priority || "None"}</p>
                       </div>
                     </div>
                   ))

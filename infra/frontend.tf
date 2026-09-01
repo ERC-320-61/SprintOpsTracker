@@ -23,6 +23,27 @@ data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
 }
 
+# SPA deep-link fallback. Runs only on the frontend (default) cache behavior, so
+# it can never touch responses from a future /api/* behavior. Extension-less
+# paths are app routes -> rewrite to /index.html; everything with a "." (assets,
+# favicon) passes straight through to S3.
+resource "aws_cloudfront_function" "spa_router" {
+  name    = "${local.name_prefix}-spa-router"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrite extension-less requests to /index.html"
+  publish = true
+
+  code = <<-JS
+    function handler(event) {
+      var request = event.request;
+      if (!request.uri.includes('.')) {
+        request.uri = '/index.html';
+      }
+      return request;
+    }
+  JS
+}
+
 resource "aws_cloudfront_distribution" "frontend" {
   enabled             = true
   default_root_object = "index.html"
@@ -41,22 +62,11 @@ resource "aws_cloudfront_distribution" "frontend" {
     allowed_methods        = ["GET", "HEAD", "OPTIONS"]
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
-  }
 
-  # SPA client-side routing: a private OAC origin returns 403 for a missing key,
-  # so serve index.html (200) for 403/404 and let react-router take over.
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.spa_router.arn
+    }
   }
 
   restrictions {

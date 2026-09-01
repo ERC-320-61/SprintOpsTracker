@@ -1,5 +1,7 @@
 -r requirements.txt
 
-# Test runner + Starlette TestClient transport
+# Test runner + Starlette TestClient transport.
+# httpx (not httpx2): FastAPI still depends on httpx, and Starlette 1.6's
+# TestClient supports it. See the filterwarnings note in pyproject.toml.
 pytest
-httpx2
+httpx

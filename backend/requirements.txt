@@ -19,3 +19,10 @@ pydantic
 
 # Clean application configuration using environment variables
 pydantic-settings
+
+# ORM and database migrations
+sqlalchemy
+alembic
+
+# PostgreSQL driver (psycopg 3)
+psycopg[binary]

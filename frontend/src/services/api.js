@@ -1,164 +1,55 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-// =========================
-// TASK API FUNCTIONS
-// =========================
-
-// Fetch all tasks from the backend
-export async function getTasks() {
-  const response = await fetch(`${API_BASE_URL}/tasks`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch tasks.");
+export class ApiError extends Error {
+  constructor(status, code, message) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
   }
-
-  return response.json();
 }
 
-// Create a new task
-export async function createTask(taskData) {
-  const response = await fetch(`${API_BASE_URL}/tasks`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(taskData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create task.");
-  }
-
-  return response.json();
+function buildUrl(path, params) {
+  const origin = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+  const base = `${origin}/api/v1${path}`;
+  if (!params) return base;
+  const query = new URLSearchParams(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    ),
+  ).toString();
+  return query ? `${base}?${query}` : base;
 }
 
-// Update an existing task by id
-export async function updateTask(taskId, taskData) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(taskData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to update task.");
+/**
+ * Single entry point for SprintOps API (v0.1) calls.
+ *
+ * TODO(cognito): when authentication lands, this is the one place that attaches
+ * `Authorization: Bearer <token>` to the request and reacts to a 401 response
+ * (single re-auth / redirect). Nothing else should touch auth.
+ */
+export async function request(path, { method = "GET", params, body } = {}) {
+  const init = { method, headers: {} };
+  if (body !== undefined) {
+    init.headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(body);
   }
 
-  return response.json();
-}
+  const response = await fetch(buildUrl(path, params), init);
+  if (response.status === 204) return null;
 
-// Delete a task by id
-export async function deleteTask(taskId) {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to delete task.");
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
   }
 
-  return response.json();
-}
-
-// =========================
-// SPRINT API FUNCTIONS
-// =========================
-
-// Fetch all sprints from the backend
-export async function getSprints() {
-  const response = await fetch(`${API_BASE_URL}/sprints`);
-
   if (!response.ok) {
-    throw new Error("Failed to fetch sprints.");
+    const error = payload?.error;
+    throw new ApiError(
+      response.status,
+      error?.code ?? "unknown",
+      error?.message ?? `Request failed with status ${response.status}.`,
+    );
   }
-
-  return response.json();
-}
-
-// Create a new sprint
-export async function createSprint(sprintData) {
-  const response = await fetch(`${API_BASE_URL}/sprints`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(sprintData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to create sprint.");
-  }
-
-  return response.json();
-}
-
-// Update an existing sprint by id
-export async function updateSprint(sprintId, sprintData) {
-  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(sprintData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to update sprint.");
-  }
-
-  return response.json();
-}
-
-// Delete a sprint by id
-export async function deleteSprint(sprintId) {
-  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to delete sprint.");
-  }
-
-  return response.json();
-}
-
-// Fetch the currently active sprint
-export async function getActiveSprint() {
-  const response = await fetch(`${API_BASE_URL}/sprints/active`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch active sprint.");
-  }
-
-  return response.json();
-}
-
-// Fetch a single sprint by id
-export async function getSprintById(sprintId) {
-  const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch sprint.");
-  }
-
-  return response.json();
-}
-
-// Fetch the dashboard summary
-export async function getDashboardSummary() {
-  const response = await fetch(`${API_BASE_URL}/dashboard/summary`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch dashboard.");
-  }
-
-  return response.json();
+  return payload;
 }

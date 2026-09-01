@@ -17,13 +17,3 @@ variable "frontend_bucket_name" {
   description = "S3 bucket name for frontend static hosting"
   type        = string
 }
-
-variable "work_items_table_name" {
-  description = "DynamoDB table name for work items"
-  type        = string
-}
-
-variable "sprints_table_name" {
-  description = "DynamoDB table name for sprints"
-  type        = string
-}

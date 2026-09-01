@@ -8,6 +8,16 @@ node_modules/
 dist/
 build/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
 # Backend deployment artifacts
 backend/dist/
 *.zip
@@ -21,6 +31,8 @@ backend/dist/
 **/.terraform/
 *.tfstate
 *.tfstate.*
+tfplan
+*.tfplan
 crash.log
 override.tf
 override.tf.json

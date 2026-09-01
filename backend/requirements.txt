@@ -8,7 +8,7 @@ uvicorn[standard]
 mangum
 
 # AWS SDK for Python
-# Used for DynamoDB, SQS, SNS, Cognito, etc.
+# Used for Cognito, S3, SQS, SNS, etc.
 boto3
 
 # Allows local environment variables to be loaded from a .env file

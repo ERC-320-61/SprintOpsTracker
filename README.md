@@ -1,173 +1,78 @@
 # SprintOpsTracker
 
-SprintOpsTracker is a small-team workflow app for managing backlog items, sprints, assignments, and progress tracking.
+SprintOpsTracker is a project- and sprint-management application: Jira-style
+projects, backlogs, sprints, boards, milestones and dependency-aware tasks, with
+Obsidian-style tagging and task-to-task linking.
 
-The project is being built as a portfolio-ready cloud application using a React frontend, FastAPI backend, DynamoDB, Cognito authentication, and optional event-driven SMS notifications.
+The authoritative planning baseline is the **SprintOps-Tracker Project Charter
+v2.0** (2026-08-31). This README is a short orientation; the charter is the
+source of truth for scope, architecture and roadmap.
 
-## Architecture
+## Status
 
-```text
-S3 + CloudFront
-    └── React frontend
+Rework in progress on the `Fast_API_Rework` line. The original Node.js / DynamoDB
+MVP has been removed from the active tree (still available in git history) and the
+codebase is being rebuilt to the charter's target architecture. Legacy planning
+docs are kept under [`docs/legacy/`](docs/legacy/) for reference only.
 
-Amazon Cognito
-    ├── user authentication
-    ├── email verification
-    ├── JWT tokens
-    ├── TOTP MFA
-    └── optional SMS MFA
+Current milestone: **V0.1 — Secure Core** (schema + API conventions, Terraform
+baseline, Cognito auth, project-scoped authorization, projects/tasks/backlog/
+sprints/board).
 
-API Gateway or ALB
-    └── FastAPI backend
+## Target architecture
 
-FastAPI
-    ├── dashboard routes
-    ├── item routes
-    ├── sprint routes
-    ├── auth / validation
-    ├── service layer
-    └── DynamoDB repository layer
+| Layer | Choice |
+|---|---|
+| Web frontend | React (Vite), hosted on S3 + CloudFront |
+| Backend API | Python + FastAPI, behind API Gateway (Lambda + Mangum initially) |
+| Database | Amazon RDS for PostgreSQL |
+| Auth | Amazon Cognito (JWT), project membership/authorization in PostgreSQL |
+| File storage | Amazon S3 (presigned, authorization-gated) |
+| Async / notifications | SQS + Lambda workers; Discord/Slack/Telegram providers |
+| Infrastructure as Code | Terraform |
+| Observability | CloudWatch |
 
-DynamoDB
-    ├── items table
-    ├── sprints table
-    └── users/team data if needed
+Serverless-first, with a cost target of roughly $20/month for the early
+deployed environment. See charter §5, §10 and §13.
 
-App Notifications
-    ├── SQS queue
-    ├── notification Lambda
-    └── SNS / SMS notifications
+## Repository layout
+
+```
+backend/    Python / FastAPI application (app/), Dockerfile, requirements.txt
+frontend/   React single-page application (Vite)
+infra/      Terraform — currently the S3 + CloudFront frontend hosting only
+docs/       Build notes, learning notes, and superseded legacy planning docs
 ```
 
-# The Plan
+## Local development
 
-## Version 1: Low-Cost Serverless Deployment
-
-The project will start with a low-cost serverless setup.
-- React frontend hosted in S3
-- CloudFront for frontend delivery
-- API Gateway for backend API access
-- AWS Lambda running FastAPI with Mangum
-- DynamoDB for data storage
-- Cognito for authentication
-- TOTP MFA for stronger user security
-- Optional SMS MFA
-- IAM roles for secure AWS access
-- Route 53 for custom domain routing
-
-## Version 2: ECS/Fargate Deployment
-
-The next version will move the FastAPI backend to containers. This version is intended to demonstrate container deployment, platform engineering, and a more production-style architecture.
-- FastAPI containerized with Docker
-- ECS Fargate for running the backend
-- Application Load Balancer for API traffic
-- CloudFront for frontend delivery
-- Cognito remains the authentication service
-- DynamoDB remains the main database
-- IAM task roles for secure AWS access
-- Optional SQS-based notification processing
-
-## Authentication Goal
-
-SprintOpsTracker will use Amazon Cognito for user authentication.
-
-Planned authentication features:
-- User sign-up and login
-- Email verification
-- JWT-based API authorization
-- Protected FastAPI routes
-- TOTP authenticator app MFA
-- Optional SMS MFA
-
-TOTP will be the preferred MFA option because it provides stronger security than SMS-only MFA.
-
-## Notification Goal
-
-SprintOpsTracker will eventually include app notifications for workflow events.
-
-Planned notification flow:
-
-```text
-FastAPI
-    ↓
-SQS
-    ↓
-Notification Lambda
-    ↓
-SNS / SMS
-    ↓
-User notification
-```
-
-Example notifications:
-- Item assigned to user
-- Sprint started
-- Sprint ending soon
-- Item moved to Blocked
-- Item overdue
-
-SMS notifications will be separate from MFA. MFA is for account security, while app notifications are for workflow updates.
-
-## Backend Goal
-
-The backend will be rewritten in Python using FastAPI.
-
-The FastAPI app will be structured so it can run in two ways:
-
-```text
-Lambda + Mangum
-ECS Fargate + Docker
-```
-
-This keeps the application portable and avoids major rework later.
-
-## Frontend Goal
-
-The React frontend will remain the main user interface.
-
-Future improvements may include:
-- Better loading states
-- Error handling
-- Sprint filtering
-- Status updates
-- Dashboard summaries
-- Login and logout flow
-- Protected routes
-- A more reactive user experience
-
-## Project Purpose
-
-This project is meant to demonstrate:
-
-- React frontend development
-- Python FastAPI backend development
-- Serverless AWS deployment
-- DynamoDB integration
-- Cognito authentication
-- MFA implementation
-- JWT-based API security
-- IAM-based security
-- Event-driven notifications with SQS
-- SMS notifications with SNS
-- Container-based deployment with ECS/Fargate
-- Cloud project documentation
-
----
-
-#  Docker
+### Frontend
 
 ```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Set `VITE_API_BASE_URL` to point at the backend.
+
+### Backend
+
+```bash
+cd backend
+python -m venv .venv && . .venv/Scripts/activate   # or .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+Interactive docs at `http://127.0.0.1:8000/docs`.
+
+### Backend via Docker
+
+```bash
+cd backend
 docker build -t sprintops-backend .
+docker run --rm -p 8000:8000 --name sprintops-api \
+  -v "$(pwd)":/app sprintops-backend \
+  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-
-### Normally
-```bash
-docker run --rm --detach --publish 8000:8000 --restart always --name sprintops-backend sprintops-backend
-```
-
-### During Dev:
-```Bash
-docker run --name sprintops-api --rm -p 8000:8000 -v "$(pwd)":/app sprintops-backend uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### Verify Docker  Hosted backend at `http://127.0.0.1:8000/docs`

@@ -11,10 +11,14 @@ models + constraint tests + seed).
 Authoritative inputs: the confirmed Phase 0B.1 domain rules, three decision
 rounds, and *SprintOps-Tracker Project Charter v2.0*.
 
-**Final amendment (2026-09-01):** `users.email` is `NULL` (was `NOT NULL`). No
+**Amendment (2026-09-01a):** `users.email` is `NULL` (was `NOT NULL`). No
 domain rule requires every identity to have an email; `cognito_sub` is the only
 identity key. Any "email required" rule belongs in Cognito/application config,
 not the database.
+
+**Amendment (2026-09-01b):** `tasks.story_points` is `SMALLINT NOT NULL
+CHECK (story_points > 0)` (was nullable). Every task carries a positive estimate;
+there is no "unestimated" state. `create_task` requires the value.
 
 ---
 
@@ -27,7 +31,7 @@ not the database.
 | **DEC-3 — assignee** | A Task's assignee must be a current member of the Task's Project, enforced by a composite FK `tasks (project_id, assignee_id) → project_memberships (project_id, user_id)`. Removing a member is **blocked** (`RESTRICT`) while any Task is still assigned to that user; the application must explicitly unassign or reassign those Tasks first. Assignments are **never** auto-nulled. Assignment never grants authorization. |
 | **DEC-4 — keys** | `projects.key`: globally unique, uppercase, immutable, stays reserved after archival. `CHECK (key ~ '^[A-Z][A-Z0-9]{1,9}$')`. Task key is derived `project.key || '-' || task.number` and **not stored**. |
 | **DEC-5 — priority** | `tasks.priority`: `SMALLINT NOT NULL DEFAULT 3`, `CHECK (priority BETWEEN 1 AND 5)`, 1 = highest urgency. |
-| **DEC-6 — estimation** | `tasks.story_points`: `SMALLINT` nullable, `CHECK (story_points IS NULL OR story_points > 0)`. `NULL` = unestimated. No `NUMERIC`; no Fibonacci set in PostgreSQL. |
+| **DEC-6 — estimation** | `tasks.story_points`: `SMALLINT NOT NULL`, `CHECK (story_points > 0)` (amended 2026-09-01b — was nullable). No "unestimated" state. No `NUMERIC`; no Fibonacci set in PostgreSQL. |
 | **DEC-7 — numbering** | Per-Project, monotonic, gaps acceptable, never recycled. Allocated from `projects.task_sequence` (counter kept on the Project row for V0.1 — brief serialisation of concurrent Task creation for one Project is acceptable; no separate counter table). |
 | **status** | `tasks.status` default `TODO`; values `TODO, IN_PROGRESS, BLOCKED, DONE`. `BACKLOG` is not a status. Backlog = `tasks.sprint_id IS NULL` (derived). Changing `sprint_id` never changes `status`. |
 | **sprint** | `sprints.status` values `PLANNED, ACTIVE, CLOSED`, default `PLANNED`. At most one `ACTIVE` Sprint per Project (partial unique index). No Sprint-name uniqueness. Deletion: application may delete an **empty `PLANNED`** Sprint; a Sprint with Tasks is blocked by `RESTRICT`; `ACTIVE`/`CLOSED` Sprints — the application rejects deletion outright. Historical Sprint assignments are never silently removed. |
@@ -98,8 +102,8 @@ not the database.
 
 ### Priority & estimation
 - **PR1** `priority` `SMALLINT` 1–5, default 3, 1 = highest urgency.
-- **E1** `story_points` `SMALLINT`, nullable, `> 0` when present. `NULL` =
-  unestimated. Allowed-value set is an application concern.
+- **E1** `story_points` `SMALLINT NOT NULL`, `> 0`. Every task is estimated.
+  Allowed-value set (e.g. Fibonacci) is an application concern.
 - **PR2 / E2** priority and estimation are independent columns.
 
 ### Activity
@@ -169,7 +173,7 @@ or a member's `user_id`) and is deliberately **not** a foreign key — see §7.6
 | `tasks.created_by` | NOT NULL | |
 | `tasks.status` | NOT NULL | default `TODO` |
 | `tasks.priority` | NOT NULL | default 3 |
-| `tasks.story_points` | nullable | `NULL` = unestimated |
+| `tasks.story_points` | NOT NULL | positive estimate, always present |
 | `tasks.archived_at` | nullable | |
 | `users.cognito_sub` | NOT NULL | unique — identity key |
 | `users.email` | **nullable** | not unique; mutable contact data |
@@ -247,7 +251,7 @@ Plus `UNIQUE (project_id, id)` — target for the Task→Sprint composite FK.
 | description | text | yes | | |
 | status | text | no | `'TODO'` | `CHECK (status IN ('TODO','IN_PROGRESS','BLOCKED','DONE'))` |
 | priority | smallint | no | `3` | `CHECK (priority BETWEEN 1 AND 5)` |
-| story_points | smallint | yes | | `CHECK (story_points IS NULL OR story_points > 0)` |
+| story_points | smallint | no | | `CHECK (story_points > 0)` |
 | assignee_id | uuid | yes | | part of composite FK → project_memberships |
 | created_by | uuid | no | | FK → users(id) |
 | archived_at | timestamptz | yes | | |
@@ -357,7 +361,7 @@ CREATE TABLE tasks (
     description  text,
     status       text        NOT NULL DEFAULT 'TODO',
     priority     smallint    NOT NULL DEFAULT 3,
-    story_points smallint,
+    story_points smallint    NOT NULL,
     assignee_id  uuid,
     created_by   uuid        NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
     archived_at  timestamptz,
@@ -379,7 +383,7 @@ CREATE TABLE tasks (
     CONSTRAINT ck_tasks_status
         CHECK (status IN ('TODO','IN_PROGRESS','BLOCKED','DONE')),
     CONSTRAINT ck_tasks_priority CHECK (priority BETWEEN 1 AND 5),
-    CONSTRAINT ck_tasks_points   CHECK (story_points IS NULL OR story_points > 0),
+    CONSTRAINT ck_tasks_points   CHECK (story_points > 0),
     CONSTRAINT ck_tasks_title_len CHECK (char_length(title) BETWEEN 1 AND 200)
 );
 
@@ -581,7 +585,7 @@ with invitations. Refine in Phase 0B.2.
     │  │ id         uuid PK │◀─────────────│ title / description ││
     │  │ project_id uuid FK │  composite   │ status text(TODO..) ││
     │  │ name / goal        │  FK ⇒ same   │ priority smallint1-5││
-    │  │ status text(PLAN..)│  project     │ story_points smallint?│
+    │  │ status text(PLAN..)│  project     │ story_points smallint │
     │  │ start_date/end_date│              │ assignee_id  uuid FK?│┘
     │  │ UNIQUE(project_id, │              │ created_by   uuid FK │
     │  │        id)         │              │ archived_at  tstz?   │

@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 
 from app.models.activity_event import ActivityEvent, AppendOnlyError
 from app.services.projects import create_project
-from app.services.tasks import create_task
+from tests.conftest import make_task
 from tests.conftest import make_user
 
 
@@ -21,7 +21,7 @@ def test_task_created_event_is_written_with_the_task(session):
     session.flush()
     base = _event_count(session, project.id)
 
-    task = create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
     session.flush()
 
     events = session.scalars(
@@ -44,7 +44,7 @@ def test_events_roll_back_with_their_change(session):
     before = _event_count(session, project.id)
 
     savepoint = session.begin_nested()
-    create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    make_task(session, project_id=project.id, title="x", created_by=owner.id)
     session.flush()
     savepoint.rollback()
 

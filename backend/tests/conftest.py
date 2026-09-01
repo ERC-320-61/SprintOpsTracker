@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.services.tasks import create_task
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 ALEMBIC_INI = BACKEND_DIR / "alembic.ini"
@@ -89,3 +90,9 @@ def make_user(session: Session, *, sub: str | None = None, email: str | None = N
     session.add(user)
     session.flush()
     return user
+
+
+def make_task(session: Session, **kwargs):
+    """`create_task` with a default estimate, for tests that don't care about it."""
+    kwargs.setdefault("story_points", 1)
+    return create_task(session, **kwargs)

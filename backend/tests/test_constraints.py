@@ -10,7 +10,8 @@ from app.models.sprint import Sprint
 from app.models.task import Task
 from app.services.projects import create_project
 from app.services.tasks import create_task
-from tests.conftest import make_user
+from tests.conftest import make_task, make_user
+
 
 
 def _project(session, *, key="SOT", name="SprintOps"):
@@ -24,7 +25,7 @@ def _project(session, *, key="SOT", name="SprintOps"):
 
 def test_task_status_check_rejects_unknown_value(session):
     project, owner = _project(session)
-    task = create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
     task.status = "ARCHIVED"
     with pytest.raises(IntegrityError, match="ck_tasks_status"):
         session.flush()
@@ -33,24 +34,40 @@ def test_task_status_check_rejects_unknown_value(session):
 @pytest.mark.parametrize("bad_priority", [0, 6, -1, 100])
 def test_task_priority_must_be_1_to_5(session, bad_priority):
     project, owner = _project(session)
-    task = create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
     task.priority = bad_priority
     with pytest.raises(IntegrityError, match="ck_tasks_priority"):
         session.flush()
 
 
-def test_task_story_points_positive_or_null(session):
+@pytest.mark.parametrize("bad_points", [0, -1])
+def test_task_story_points_must_be_positive(session, bad_points):
     project, owner = _project(session)
-    ok = create_task(
-        session, project_id=project.id, title="ok", created_by=owner.id, story_points=None
+    with pytest.raises(IntegrityError, match="ck_tasks_points"):
+        create_task(
+            session,
+            project_id=project.id,
+            title="x",
+            created_by=owner.id,
+            story_points=bad_points,
+        )
+
+
+def test_task_story_points_is_not_null(session):
+    project, owner = _project(session)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task.story_points = None
+    with pytest.raises(IntegrityError, match="story_points"):
+        session.flush()
+
+
+def test_task_story_points_positive_is_accepted(session):
+    project, owner = _project(session)
+    task = make_task(
+        session, project_id=project.id, title="x", created_by=owner.id, story_points=8
     )
     session.flush()
-    assert ok.story_points is None
-
-    bad = create_task(session, project_id=project.id, title="bad", created_by=owner.id)
-    bad.story_points = 0
-    with pytest.raises(IntegrityError, match="ck_tasks_points"):
-        session.flush()
+    assert task.story_points == 8
 
 
 def test_membership_role_check(session):
@@ -130,7 +147,7 @@ def test_task_cannot_reference_sprint_from_another_project(session):
     session.add(foreign_sprint)
     session.flush()
 
-    task = create_task(session, project_id=p1.id, title="x", created_by=o1.id)
+    task = make_task(session, project_id=p1.id, title="x", created_by=o1.id)
     task.sprint_id = foreign_sprint.id
     with pytest.raises(IntegrityError, match="fk_tasks_sprint_same_project"):
         session.flush()
@@ -141,7 +158,7 @@ def test_task_can_reference_sprint_in_same_project(session):
     sprint = Sprint(project_id=project.id, name="S")
     session.add(sprint)
     session.flush()
-    task = create_task(
+    task = make_task(
         session, project_id=project.id, title="x", created_by=owner.id, sprint_id=sprint.id
     )
     session.flush()
@@ -152,7 +169,7 @@ def test_assignee_must_be_member_of_the_tasks_project(session):
     p1, o1 = _project(session, key="AAA")
     p2, o2 = _project(session, key="BBB")  # o2 is a member of p2 only
 
-    task = create_task(session, project_id=p1.id, title="x", created_by=o1.id)
+    task = make_task(session, project_id=p1.id, title="x", created_by=o1.id)
     task.assignee_id = o2.id
     with pytest.raises(IntegrityError, match="fk_tasks_assignee_is_member"):
         session.flush()
@@ -161,7 +178,7 @@ def test_assignee_must_be_member_of_the_tasks_project(session):
 def test_assignee_cannot_be_a_non_member(session):
     project, owner = _project(session)
     outsider = make_user(session)
-    task = create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
     task.assignee_id = outsider.id
     with pytest.raises(IntegrityError, match="fk_tasks_assignee_is_member"):
         session.flush()
@@ -172,7 +189,7 @@ def test_assignee_who_is_a_member_is_accepted(session):
     member = make_user(session)
     session.add(ProjectMembership(project_id=project.id, user_id=member.id, role="WRITER"))
     session.flush()
-    task = create_task(
+    task = make_task(
         session, project_id=project.id, title="x", created_by=owner.id, assignee_id=member.id
     )
     session.flush()
@@ -187,7 +204,7 @@ def test_member_removal_blocked_while_task_assigned(session):
     membership = ProjectMembership(project_id=project.id, user_id=member.id, role="WRITER")
     session.add(membership)
     session.flush()
-    create_task(
+    make_task(
         session, project_id=project.id, title="x", created_by=owner.id, assignee_id=member.id
     )
     session.flush()
@@ -202,7 +219,7 @@ def test_sprint_deletion_blocked_when_it_has_tasks(session):
     sprint = Sprint(project_id=project.id, name="S")
     session.add(sprint)
     session.flush()
-    create_task(
+    make_task(
         session, project_id=project.id, title="x", created_by=owner.id, sprint_id=sprint.id
     )
     session.flush()
@@ -240,7 +257,7 @@ def test_project_hard_delete_blocked_by_activity_events(session):
 
 def test_task_with_no_sprint_is_allowed(session):
     project, owner = _project(session)
-    task = create_task(session, project_id=project.id, title="backlog item", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="backlog item", created_by=owner.id)
     session.flush()
     assert task.sprint_id is None
 
@@ -253,7 +270,7 @@ def test_changing_sprint_does_not_touch_status(session):
     session.add(sprint)
     session.flush()
 
-    task = create_task(session, project_id=project.id, title="x", created_by=owner.id)
+    task = make_task(session, project_id=project.id, title="x", created_by=owner.id)
     task.status = "IN_PROGRESS"
     session.flush()
 

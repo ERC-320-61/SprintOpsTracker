@@ -42,8 +42,8 @@ class Task(TimestampMixin, Base):
     priority: Mapped[int] = mapped_column(
         SmallInteger, nullable=False, default=3, server_default=text("3")
     )
-    # NULL => unestimated.
-    story_points: Mapped[int | None] = mapped_column(SmallInteger)
+    # Every task carries a positive estimate; there is no "unestimated" state.
+    story_points: Mapped[int] = mapped_column(SmallInteger, nullable=False)
 
     # Part of the (project_id, assignee_id) composite FK to project_memberships.
     assignee_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
@@ -81,9 +81,7 @@ class Task(TimestampMixin, Base):
         CheckConstraint("number > 0", name="ck_tasks_number"),
         CheckConstraint(sql_in_list("status", TASK_STATUSES), name="ck_tasks_status"),
         CheckConstraint("priority BETWEEN 1 AND 5", name="ck_tasks_priority"),
-        CheckConstraint(
-            "story_points IS NULL OR story_points > 0", name="ck_tasks_points"
-        ),
+        CheckConstraint("story_points > 0", name="ck_tasks_points"),
         CheckConstraint(
             "char_length(title) BETWEEN 1 AND 200", name="ck_tasks_title_len"
         ),

@@ -32,9 +32,9 @@ def create_task(
     project_id: uuid.UUID,
     title: str,
     created_by: uuid.UUID,
+    story_points: int,
     description: str | None = None,
     priority: int = 3,
-    story_points: int | None = None,
     sprint_id: uuid.UUID | None = None,
     assignee_id: uuid.UUID | None = None,
 ) -> Task:

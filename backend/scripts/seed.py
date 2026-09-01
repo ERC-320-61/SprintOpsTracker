@@ -46,7 +46,7 @@ def main() -> int:
         create_task(session, project_id=project.id, title="Draft the API conventions",
                     created_by=owner.id, sprint_id=sprint.id, priority=2, story_points=3)
         create_task(session, project_id=project.id, title="Backlog: evaluate CI options",
-                    created_by=owner.id)
+                    created_by=owner.id, story_points=5)
 
     print("Seeded project SOT with 1 sprint and 3 tasks.")
     return 0

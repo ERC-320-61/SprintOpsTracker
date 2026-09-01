@@ -123,7 +123,7 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("status", sa.Text(), server_default=sa.text("'TODO'"), nullable=False),
         sa.Column("priority", sa.SmallInteger(), server_default=sa.text("3"), nullable=False),
-        sa.Column("story_points", sa.SmallInteger(), nullable=True),
+        sa.Column("story_points", sa.SmallInteger(), nullable=False),
         sa.Column("assignee_id", sa.Uuid(), nullable=True),
         sa.Column("created_by", sa.Uuid(), nullable=False),
         sa.Column("archived_at", sa.DateTime(timezone=True), nullable=True),
@@ -154,7 +154,7 @@ def upgrade() -> None:
             "status IN ('TODO', 'IN_PROGRESS', 'BLOCKED', 'DONE')", name="ck_tasks_status"
         ),
         sa.CheckConstraint("priority BETWEEN 1 AND 5", name="ck_tasks_priority"),
-        sa.CheckConstraint("story_points IS NULL OR story_points > 0", name="ck_tasks_points"),
+        sa.CheckConstraint("story_points > 0", name="ck_tasks_points"),
         sa.CheckConstraint("char_length(title) BETWEEN 1 AND 200", name="ck_tasks_title_len"),
     )
     op.create_index("ix_tasks_project_status", "tasks", ["project_id", "status"])
